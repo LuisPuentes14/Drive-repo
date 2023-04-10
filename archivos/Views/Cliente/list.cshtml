@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Clientes</h1>
+    
+</div>
+
+<div  class="sub-menu1-container py-5">
+
+
+    <table id="tableList" class="table">
+
+
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Cliente</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var intem in ViewBag.Clientes)
+                {
+                    <tr>
+
+                        <td>@intem.id_cliente</td>
+
+                        <td>@intem.Nombre</td>
+
+                        <td>
+
+                            <a asp-controller="Documents" asp-action="getPrincipalFilesCliente" asp-route-idCliente="@intem.id_cliente">ver</a>
+                        </td>
+
+                    </tr>
+
+
+                }
+
+
+            }
+
+        </tbody>
+
+    </table>
+</div>
+
+
+
+@section Scripts{
+
+
+    <script>
+
+        let table = new DataTable('#tableList', {
+           responsive:true,
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+            },
+        });
+
+    </script>
+}

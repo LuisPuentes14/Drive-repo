@@ -1,0 +1,242 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Carpetas por cliente</h1>
+    
+</div>
+
+
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+    Agregar carpeta
+</button>
+
+<br />
+<br />
+<a asp-controller="Cliente" asp-action="list"><img src="~/img/volver-flecha.png" class="img" /></a>
+<br />
+<br />
+
+<div class="sub-menu1-container py-5">
+    <table id="tableList" class="table">
+
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre de carpeta</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var intem in ViewBag.files)
+                {
+                    <tr>
+
+                        <td> <img src="~/img/carpeta.png" style="width:25px" />    </td>
+
+                        <td>@intem.nombre_documento_padre</td>
+
+                        <td>
+                            <a asp-controller="Documents"  asp-action="openFile" asp-route-idCliente="@intem.id_cliente" asp-route-idDocPadre="@intem.id_documento_padre"><img src="~/img/abrir-documento.png" style="width:25px; height:25px" /></a>
+                            <button type="button" onclick="deleteFolder(this)" class="btn " data-content-cliente="@intem.id_cliente" data-content-idPadre="@intem.id_documento_padre"> <img src="~/img/delete.png" style="width:25px; height:25px" /></button>
+                        </td>
+
+                    </tr>
+
+
+                }
+
+
+            }
+        </tbody>
+
+
+    </table>
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Agregar Carpeta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <input type="hidden" class="form-control" id="idCliente" name="idCliente">
+                    <label for="nameFolder" class="form-label">Nombre de carpeta</label>
+                    <input type="text" class="form-control" id="nameFolder" name="nameFolder">
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="newFolder" data-bs-dismiss="modal" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script>
+
+        let table = new DataTable('#tableList', {
+            responsive: true,
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json"
+            },
+        });
+
+    </script>
+
+
+
+    @*crear*@
+    <script>
+
+        let newFolderButton = document.getElementById("newFolder")
+
+        newFolderButton.addEventListener("click", sendNewFolder);
+
+        function sendNewFolder() {
+
+            let namefolder = document.getElementById("nameFolder").value;
+
+            console.log(namefolder)
+
+            let data = {
+                nombre_documento_padre: namefolder,
+                id_cliente: @ViewBag.idCliente,
+                id_tipo_documento: 1,
+                isPrincipal: true
+            }
+
+
+
+            const options = {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json' 
+                }
+            };
+
+            fetch("@Url.Action("addFolder","Documents")", options)
+                .then(response => response.json()) 
+                .then(data => {
+                    
+                    Swal.fire({
+                        position: 'center',
+                        icon: 'success',
+                        title: 'Your work has been saved',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then((result) => {
+
+
+                        location.reload();
+
+
+                    })
+
+
+                })
+                .catch(error => console.error(error));
+
+
+        }
+
+    </script>
+
+    @*Eliminar*@
+
+    <script>
+
+
+
+        function deleteFolder(element) {
+
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    let data = {
+                        id_documento_padre: element.dataset.contentIdpadre,
+                        id_cliente: element.dataset.contentCliente,
+
+                    }
+
+
+                    const options = {
+                        method: 'POST',
+                        body: JSON.stringify(data), // cuerpo de la petición (opcional)
+                        headers: {
+                            'Content-Type': 'application/json' // tipo de contenido de la petición
+                        }
+                    };
+
+
+                    fetch("@Url.Action("deleteDocByFolder","Documents")", options)
+                        .then(response => response.json()) // convertir la respuesta a JSON
+                        .then(data => {
+                            console.log(data)
+                            Swal.fire({
+                                position: 'center',
+                                icon: 'success',
+                                title: 'Your work has been saved',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then((result) => {
+                                /* Read more about isConfirmed, isDenied below */
+
+                                location.reload();
+                                //Swal.fire('Saved!', '', 'success')
+
+                            })
+
+
+                        }) // manejar los datos de la respuesta
+                        .catch(error => console.error(error)); // manejar errores
+
+
+
+
+
+
+
+
+
+                }
+            })
+
+
+
+
+
+
+
+        }
+
+
+
+    </script>
+
+
+}
+
